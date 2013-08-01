@@ -28,7 +28,15 @@ class Nexcessnet_Turpentine_Model_Observer_Varnish extends Varien_Event_Observer
      * @param  mixed $eventObject
      * @return null
      */
-    public function setCacheFlagHeader( $eventObject ) {
+    public function setCacheFlagHeader( $eventObject ) {    
+        if (headers_sent()) {
+            if (Mage::helper('turpentine/varnish')->getVarnishDebugEnabled()) {
+                Mage::helper('turpentine/debug')->logDebug("Headers were already sent");
+            }
+
+            return null;
+        }
+        
         $response = $eventObject->getResponse();
         if( Mage::helper( 'turpentine/varnish' )->shouldResponseUseVarnish() ) {
             $response->setHeader( 'X-Turpentine-Cache',
